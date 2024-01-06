@@ -12,6 +12,7 @@ const {
   AuthError,
   MultiStatusError,
   TokenError,
+  LoginTokenError,
 } = require("../lib/errorHandler/customErrors");
 const { getRoles } = require("../lib/helper/helper");
 
@@ -112,7 +113,7 @@ const createUser = async (data) => {
   }
 };
 
-const login = async (data) => {
+const login = async (data, tokenflag) => {
   try {
     const { email, password } = data;
 
@@ -137,16 +138,19 @@ const login = async (data) => {
     );
 
     if (foundUser.length === 0) {
-      throw new PasswordError("Login Error", "Invalid email address");
+      throw new PasswordError("Invalid email address", "user login error");
     } else {
       let user = foundUser[0];
+      if (tokenflag && user.email != tokenflag) {
+        throw new LoginTokenError();
+      }
 
       let comparedPassword = await bcrypt.compare(password, user.password);
 
       if (!comparedPassword) {
         throw new PasswordError(
-          "unauthorized",
           "Please check your email and password",
+          "login credential error",
         );
       } else {
         let jwtToken = jwt.sign(
@@ -180,6 +184,7 @@ const login = async (data) => {
     }
   } catch (e) {
     if (e instanceof PasswordError) throw e;
+    else if (e instanceof LoginTokenError) throw e;
     else throw new SQLError(e);
   }
 };

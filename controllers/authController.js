@@ -3,15 +3,13 @@ const {
   createUser,
   login,
   authLogin,
-  getByEmail
+  getByEmail,
 } = require("../queries/users");
 
 const { parsedMessage, stc } = require("../lib/helper/helper");
 
 const allGetUsersFunc = async (req, res) => {
   const allUsers = await getAllUsers();
-
-  console.log(res.locals.decodedData);
 
   if (allUsers.length === 0) {
     res.json({ message: "please go create some users" });
@@ -45,8 +43,8 @@ const authCreateUser = async (req, res, next) => {
     });
 };
 
-const loginFunc = async (req, res, next) => {
-  await login(req.body)
+const loginFunc = async (req, res) => {
+  await login(req.body, req.tokenflag)
     .then((response) => {
       res
         .cookie("accessToken", response.accessToken[1], {
@@ -80,5 +78,5 @@ module.exports = {
   createUserFunc,
   loginFunc,
   authCreateUser,
-  preRegister
+  preRegister,
 };
